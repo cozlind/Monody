@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monody.CSharp.Plugins", "Monody.CSharp.Plugins.csproj", "{A0B0BEF7-F64A-4AC4-B5EB-241FE4F23EEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monody.CSharp", "Monody.CSharp.csproj", "{4191C56A-C360-162C-F858-21213F84B16C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monody.CSharp.Editor", "Monody.CSharp.Editor.csproj", "{80C96292-3A7E-B966-4499-AE94BEC27300}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A0B0BEF7-F64A-4AC4-B5EB-241FE4F23EEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0B0BEF7-F64A-4AC4-B5EB-241FE4F23EEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0B0BEF7-F64A-4AC4-B5EB-241FE4F23EEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0B0BEF7-F64A-4AC4-B5EB-241FE4F23EEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4191C56A-C360-162C-F858-21213F84B16C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4191C56A-C360-162C-F858-21213F84B16C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4191C56A-C360-162C-F858-21213F84B16C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4191C56A-C360-162C-F858-21213F84B16C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80C96292-3A7E-B966-4499-AE94BEC27300}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80C96292-3A7E-B966-4499-AE94BEC27300}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80C96292-3A7E-B966-4499-AE94BEC27300}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80C96292-3A7E-B966-4499-AE94BEC27300}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
