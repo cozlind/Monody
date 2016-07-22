@@ -102,7 +102,7 @@ public class WavKeyEditor : EditorWindow
         {
             waveForms[i] = AudioUtility.GetWaveForm(clip, i, waveFormWidth, waveFormHeight / clip.channels);
 
-            waveForm.SetPixels(0, waveFormHeight * i / clip.channels, waveFormWidth, waveFormHeight / clip.channels, waveForms[i].GetPixels());
+            waveForm.SetPixels(0, waveFormHeight * (clip.channels-i-1) / clip.channels, waveFormWidth, waveFormHeight / clip.channels, waveForms[i].GetPixels());
             waveForm.Apply();
         }
     }
@@ -204,7 +204,7 @@ public class WavKeyEditor : EditorWindow
         }
         Repaint();
     }
-    internal class Beat : IComparable
+    public class Beat : IComparable
     {
         public float time;
         public int type;//[0,3]
@@ -228,16 +228,15 @@ public class WavKeyEditor : EditorWindow
     }
     void recordAndPlayClip()
     {
+        if (Event.current.type == EventType.KeyUp && Event.current.keyCode == KeyCode.Space)
+        {
+            recordToggle = !recordToggle;
+        }
         if (AudioUtility.IsClipPlaying(clip))
         {
             playHeadTime = AudioUtility.GetClipPosition(clip);
+            if (secondToPixel(playHeadTime) >= windowWidth - 80) scrollPos.x += rightWidth;
             Repaint();
-            if (playHeadTime >= clip.length - float.Epsilon)
-            {
-                playToggle = false;
-                recordToggle = false;
-                AudioUtility.StopClip(clip);
-            }
             if (!isKeyPressed && Event.current.type == EventType.KeyDown)
             {
                 isKeyPressed = true;
@@ -276,6 +275,12 @@ public class WavKeyEditor : EditorWindow
         }
         else if (!AudioUtility.IsClipPlaying(clip) && (playToggle || recordToggle))
         {
+            //play once complete
+            if(clip.length - playHeadTime <= 0.022f)
+            {
+                playHeadTime = 0;
+                scrollPos.x = 0;
+            }
             AudioUtility.PlayClip(clip);
             AudioUtility.SetClipSamplePosition(clip, secondToSample(playHeadTime));
         }
@@ -371,7 +376,8 @@ public class WavKeyEditor : EditorWindow
                 TimeLineGUI();
                 //draw waveform
                 waveFormRect = new Rect(0, timelineRect.yMax, waveFormWidth, waveFormHeight);
-                GUI.Label(waveFormRect, waveForm);
+                GUI.DrawTexture(waveFormRect, waveForm);
+                DrawLine(new Vector2(waveFormWidth, 0), new Vector2(waveFormWidth, windowHeight - scrollBarHeight), Color.white);
             }
             GUI.EndScrollView();
             drawRedLine();

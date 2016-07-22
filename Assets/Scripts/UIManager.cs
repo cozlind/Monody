@@ -22,7 +22,7 @@ public class UIManager : MonoBehaviour {
     {
         instance = this;
         if (DebugManager.Instance.isDebug)
-            openPanel("Panel_Audio_Debug");
+            resetPanel();
         else openPanel("Panel_Main");
     }
     #region panel

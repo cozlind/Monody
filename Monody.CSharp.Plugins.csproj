@@ -162,7 +162,18 @@
     <Compile Include="Assets\Standard Assets\Utility\WaypointProgressTracker.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\ClipBeats\Monody_Section_0_Intro.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_0_Loop.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_1_Loop_1.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_1_Loop_2_SkipLast.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_2_Loop_1_SkipFirst.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_2_Loop_2.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_3_Loop.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_4_Loop_1.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_5_Loop_1.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_5_Loop_2.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_5_Loop_3_SkipLast.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_7_Loop_1.txt" />
+    <None Include="Assets\ClipBeats\Monody_Section_8_Over.txt" />
     <None Include="Assets\Plugins\Pixelplacement\iTween\ReadMe!\ReadMe!.txt" />
     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
     <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
