@@ -23,7 +23,7 @@ public class BeatLine : MonoBehaviour
     static Vector3 direct = new Vector3(1, 0, 0);
     static Vector3 newDirect = Vector3.zero;
     Ray ray;
-    List<RaycastHit> hitList = new List<RaycastHit>();
+    public List<RaycastHit> hitList = new List<RaycastHit>();
 
     GameObject keyJ, keyK, keyL, keySmc;
     void Awake()
@@ -39,25 +39,45 @@ public class BeatLine : MonoBehaviour
     public float maxTime;
     int index = 0;
     GameObject key;
+    Vector3 pos;
     bool isStart;
+    public bool isUpdateHits=false;
     void Update()
     {
-        float inputX = Input.GetAxis("Horizontal") * Time.deltaTime * rotateSpeed;
-        direct = Quaternion.Euler(-Vector3.forward * inputX) * direct;
-        //draw basic ray
-        hitList = new List<RaycastHit>();
-        RaycastHit hit;
-        Vector3 origin = transform.position;
-        Vector3 dir = direct;
-        while (Physics.Raycast(origin, dir, out hit))
+        //float inputX = Input.GetAxis("Horizontal") * Time.deltaTime * rotateSpeed;
+        //direct = Quaternion.Euler(-Vector3.forward * inputX) * direct;
+        direct = transform.right;
+        //get the whole hit point within the range of distance
+        if (Input.GetAxis("Horizontal") != 0|| isUpdateHits)
         {
-            hitList.Add(hit);
-            origin = hit.point;
-            dir = Vector3.Reflect(dir, hit.normal);
+            isUpdateHits = false;
+               //draw basic ray
+               RaycastHit hit;
+            Vector3 origin = transform.position;
+            Vector3 dir = direct;
+            float distance = maxLength;
+            hitList = new List<RaycastHit>();
+            if (Physics.Raycast(origin, dir, out hit))
+                while (Physics.Raycast(origin, dir, out hit))
+                {
+                    float hitDistance = Vector3.Distance(hit.point, origin);
+                    if (distance - hitDistance < 0)//less than the distance among the hitpoint
+                    {
+                        hit.point = origin + (hit.point - origin).normalized * distance;
+                        hitList.Add(hit);
+                        break;
+                    }
+                    distance -= hitDistance;
+                    hitList.Add(hit);
+                    origin = hit.point;
+                    dir = Vector3.Reflect(dir, hit.normal);
+                }
+            else
+            {
+                hit.point = origin + dir.normalized*maxLength;
+                hitList.Add(hit);
+            }
         }
-        //last one
-        hit.point = origin + dir;
-        hitList.Add(hit);
         //Draw Lines
         DrawLines();
         //Draw Beats
@@ -102,19 +122,20 @@ public class BeatLine : MonoBehaviour
                 break;
             }
             if (isStart) distance = (beat.time + AudioManager.Instance.audioSource.clip.length) * moveSpeed;
+            getPointPos(distance, out pos);
             switch (beat.type)
             {
                 case 0:
-                    key = Instantiate(keyJ, getPointPos(distance), Quaternion.identity) as GameObject;
+                    key = Instantiate(keyJ, pos, Quaternion.identity) as GameObject;
                     break;
                 case 1:
-                    key = Instantiate(keyK, getPointPos(distance), Quaternion.identity) as GameObject;
+                    key = Instantiate(keyK,pos, Quaternion.identity) as GameObject;
                     break;
                 case 2:
-                    key = Instantiate(keyL, getPointPos(distance), Quaternion.identity) as GameObject;
+                    key = Instantiate(keyL, pos, Quaternion.identity) as GameObject;
                     break;
                 case 3:
-                    key = Instantiate(keySmc, getPointPos(distance), Quaternion.identity) as GameObject;
+                    key = Instantiate(keySmc, pos, Quaternion.identity) as GameObject;
                     break;
             }
             // Debug.Log(index + "/" + list.Count + ":" + beat.time + "/" + beatTime + ":" + distance);
@@ -122,53 +143,36 @@ public class BeatLine : MonoBehaviour
             index++;
         }
     }
-    public Vector3 getPointPos(float distance)
+    public void getPointPos(float distance,out Vector3 pos)
     {
-        Ray ray = new Ray(transform.position, direct);
+        Ray ray = new Ray(transform.position, hitList[0].point);
         for (int i = 0; i < hitList.Count - 1; i++)
         {
-            RaycastHit hit = hitList[i];
-            float hitDistance = Vector3.Distance(hit.point, ray.origin);
+            Vector3 hitPoint = hitList[i].point;
+            float hitDistance = Vector3.Distance(hitPoint, ray.origin);
             if (distance - hitDistance < 0)//less than the distance among the hitpoint
             {
-                ray.direction = hit.point - ray.origin;
-                return ray.GetPoint(distance);
+                ray.direction = hitPoint - ray.origin;
+                pos= ray.GetPoint(distance);
+                return;
             }
             distance -= hitDistance;
-            ray.origin = hit.point;
+            ray.origin = hitPoint;
         }
         //above the last hitpoint or no hitpoint exist
         ray.direction = hitList[hitList.Count - 1].point - ray.origin;
-        return ray.GetPoint(distance);
+        pos= ray.GetPoint(distance);
     }
     void DrawLines()
     {
+
         List<Vector3> pointList = new List<Vector3>();
-        try
+        float distance = maxLength;
+        pointList.Add(transform.position);
+        foreach (var hit in hitList)
         {
-            float distance = maxLength;
-            pointList.Add(transform.position);
-            Ray ray = new Ray(transform.position, direct);
-            for (int i = 0; i < hitList.Count - 1; i++)
-            {
-                RaycastHit hit = hitList[i];
-                pointList.Add(hit.point);
-                ray.direction = hit.point - ray.origin;
-                float hitDistance = Vector3.Distance(hit.point, ray.origin);
-                if (distance - hitDistance < 0)//less than the distance among the hitpoint
-                {
-                    pointList.Add(ray.origin + ray.direction * distance);
-                    return;
-                }
-                pointList.Add(ray.origin + ray.direction * hitDistance);
-                distance -= hitDistance;
-                ray.origin = hit.point;
-            }
-            //above the last hitpoint or no hitpoint exist
-            ray.direction = hitList[hitList.Count - 1].point - ray.origin;
-            pointList.Add(ray.origin + ray.direction * distance);
+            pointList.Add(hit.point);
         }
-        catch { }
         GetComponent<LineRenderer>().SetVertexCount(pointList.Count);
         GetComponent<LineRenderer>().SetPositions(pointList.ToArray());
     }

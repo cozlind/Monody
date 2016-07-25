@@ -4,12 +4,14 @@ using System.Collections;
 public class BeatUnit : MonoBehaviour {
 
     public GameObject hitArea;
+    public GameObject player;
     public float threshold = 0.22f;
     public float distance;
     bool isPerfect = false;
 	void Start ()
     {
         hitArea = GameObject.Find("HitArea");
+        player = GameObject.Find("Player");
         StartCoroutine("destroySelf");
     } 
     IEnumerator destroySelf()
@@ -37,16 +39,24 @@ public class BeatUnit : MonoBehaviour {
             time += Time.deltaTime;
             if (Input.GetKeyDown(key))
             {
+                //click perfect
                 isPerfect = true;
                 gameObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.4f);
                 gameObject.transform.localScale /= 2f;
                 hitArea.transform.localScale *= 1.5f;
-                yield return new WaitForSeconds(0.1f);
+
+                //
+                PlayerController.Instance.enableGravity = true;
+                PlayerController.Instance.dash(BeatLine.Instance.hitList[0].point);
+
+                 yield return new WaitForSeconds(0.1f);
                 hitArea.transform.localScale /= 1.5f;
                 break;
             }
             yield return null;
         }
+        if (!isPerfect)
+            PlayerController.Instance.enableGravity = false;
         Destroy(gameObject);
     }
 	void Update ()
@@ -55,7 +65,9 @@ public class BeatUnit : MonoBehaviour {
         gameObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, Mathf.Pow(1 - distance / BeatLine.Instance.maxLength,2));
         if (!isPerfect)
         {
-            transform.position = BeatLine.Instance.getPointPos(distance);
+            Vector3 pos;
+            BeatLine.Instance.getPointPos(distance,out pos);
+            transform.position = pos;
         }
     }
 }
