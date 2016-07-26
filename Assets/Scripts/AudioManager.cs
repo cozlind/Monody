@@ -20,12 +20,14 @@ public class AudioManager : MonoBehaviour
     }
     [SerializeField]
     AudioClip[] audioList;
+    [NonSerialized]
     public AudioSource audioSource;
     void Awake()
     {
         clipList = new List<AudioClip>();
         audioSource = GetComponent<AudioSource>();
         instance = this;
+        beatDict = new Dictionary<string, List<Beat>>();
         getBeatDict();
     }
     void Update()
@@ -141,80 +143,94 @@ public class AudioManager : MonoBehaviour
         audioSource.clip = clip;
         audioSource.Play();
     }
+
+    public IEnumerator emphasizeVolume()
+    {
+        audioSource.volume *= 1.4f;
+        yield return new WaitForSeconds(0.5f);
+        audioSource.volume /= 1.4f;
+    }
     #region beat list reader
     public Dictionary<string, List<Beat>> beatDict = new Dictionary<string, List<Beat>>();
     public List<Beat> beatList
     {
         get
         {
-            try
+            if (audioSource.clip==null||!beatDict.ContainsKey(audioSource.clip.name))
             {
-                if (audioSource.clip == null || beatDict[audioSource.clip.name] == null) return null;
-                return beatDict[audioSource.clip.name];
+                return null;
             }
-            catch {/*the clip name may not exist in keys of beatDict, but it's normal*/ }
-            return null;
+            return beatDict[audioSource.clip.name];
         }
     }
     public AudioClip nextClip
     {
         get
         {
-            try
+            if (isTrigger) return null;
+            int index = clipList.IndexOf(audioSource.clip);
+            if (index == -1)
             {
-                if (isTrigger) return null;
-                return clipList[(clipList.IndexOf(audioSource.clip) + 1) % clipList.Count];
+                return null;
             }
-            catch {/*the clip name may not exist in keys of beatDict, but it's normal*/ }
-            return null;
+            index = (index + 1) % clipList.Count;
+            return clipList[index % clipList.Count];
         }
     }
     public List<Beat> nextBeatList
     {
         get
         {
-            try
+            if (isTrigger) return null;
+            int index = clipList.IndexOf(audioSource.clip);
+            if (index == -1)
             {
-                if (isTrigger) return null;
-                string nextClipName = clipList[(clipList.IndexOf(audioSource.clip) + 1) % clipList.Count].name;
-                if (audioSource.clip == null || beatDict[nextClipName] == null) return null;
-                return beatDict[nextClipName];
+                return null;
             }
-            catch {/*the clip name may not exist in keys of beatDict, but it's normal*/ }
-            return null;
+            index = (index + 1) % clipList.Count;
+            string nextClipName = clipList[index].name;
+            if (!beatDict.ContainsKey(nextClipName))
+            {
+                return null;
+            }
+            return beatDict[nextClipName];
         }
     }
     public List<Beat> nextNextBeatList
     {
         get
         {
-            try
+            if (isTrigger) return null;
+            int index = clipList.IndexOf(audioSource.clip);
+            if (index == -1)
             {
-                if (isTrigger) return null;
-                string nextNextClipName = clipList[(clipList.IndexOf(audioSource.clip) + 2) % clipList.Count].name;
-                if (audioSource.clip == null || beatDict[nextNextClipName] == null) return null;
-                return beatDict[nextNextClipName];
+                return null;
             }
-            catch {/*the clip name may not exist in keys of beatDict, but it's normal*/ }
-            return null;
+            index = (index + 2) % clipList.Count;
+            string nextNextClipName = clipList[index].name;
+            if (!beatDict.ContainsKey(nextNextClipName))
+            {
+                return null;
+            }
+            return beatDict[nextNextClipName];
         }
     }
     void getBeatDict()
     {
         foreach (var clip in audioList)
         {
-            String path = Directory.GetCurrentDirectory() + @"/Assets/ClipBeats/" + clip.name + ".txt";
-            if (File.Exists(path))
+            TextAsset textArray = Resources.Load<TextAsset>("ClipBeats/" + clip.name);
+            if (textArray == null) {  continue; }
+            List<Beat> beatList = new List<Beat>();
+            string[] lines = textArray.text.Split('\n');
+            foreach (string line in lines)
             {
-                List<Beat> beatList = new List<Beat>();
-                string[] lines = File.ReadAllLines(path);
-                foreach (string line in lines)
-                {
-                    string[] lineSplit = line.Split(":".ToCharArray());
-                    beatList.Add(new Beat(float.Parse(lineSplit[0]), int.Parse(lineSplit[1])));
-                }
-                beatDict.Add(clip.name, beatList);
+                if (line.Length<2) break;//the line feed at the end of the file
+                string[] lineSplit = line.Split(':');
+                Beat b=new Beat(float.Parse(lineSplit[0]), int.Parse(lineSplit[1]));
+                beatList.Add(b);
             }
+            beatDict.Add(clip.name, beatList);
         }
     }
     #endregion

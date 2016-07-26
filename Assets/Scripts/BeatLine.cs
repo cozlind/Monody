@@ -21,11 +21,18 @@ public class BeatLine : MonoBehaviour
     public float rotateSpeed = 200;
     public float maxLength = 50;
     static Vector3 direct = new Vector3(1, 0, 0);
-    static Vector3 newDirect = Vector3.zero;
     Ray ray;
     public List<RaycastHit> hitList = new List<RaycastHit>();
 
     GameObject keyJ, keyK, keyL, keySmc;
+    public float moveSpeed = 50;
+    public float maxTime;
+    int index = 0;
+    GameObject key;
+    Vector3 pos;
+    bool isStart;
+    [NonSerialized]
+    public bool isUpdateHits = true;
     void Awake()
     {
         isStart = true;
@@ -35,24 +42,17 @@ public class BeatLine : MonoBehaviour
         keyL = Resources.Load("Prefabs/KeyL") as GameObject;
         keySmc = Resources.Load("Prefabs/KeySmc") as GameObject;
     }
-    public float moveSpeed = 50;
-    public float maxTime;
-    int index = 0;
-    GameObject key;
-    Vector3 pos;
-    bool isStart;
-    public bool isUpdateHits=false;
     void Update()
     {
         //float inputX = Input.GetAxis("Horizontal") * Time.deltaTime * rotateSpeed;
         //direct = Quaternion.Euler(-Vector3.forward * inputX) * direct;
         direct = transform.right;
         //get the whole hit point within the range of distance
-        if (Input.GetAxis("Horizontal") != 0|| isUpdateHits)
+        if (Input.GetAxis("Horizontal") != 0 || isUpdateHits)
         {
             isUpdateHits = false;
-               //draw basic ray
-               RaycastHit hit;
+            //draw basic ray
+            RaycastHit hit;
             Vector3 origin = transform.position;
             Vector3 dir = direct;
             float distance = maxLength;
@@ -74,7 +74,7 @@ public class BeatLine : MonoBehaviour
                 }
             else
             {
-                hit.point = origin + dir.normalized*maxLength;
+                hit.point = origin + dir.normalized * maxLength;
                 hitList.Add(hit);
             }
         }
@@ -83,7 +83,9 @@ public class BeatLine : MonoBehaviour
         //Draw Beats
         maxTime = maxLength / moveSpeed;
         float beatTime = AudioManager.Instance.audioSource.time + maxTime;
+
         if (AudioManager.Instance.nextClip != null
+            && AudioManager.Instance.nextBeatList != null
             && beatTime > AudioManager.Instance.audioSource.clip.length
             && beatTime <= AudioManager.Instance.audioSource.clip.length + maxTime
             && beatTime <= AudioManager.Instance.audioSource.clip.length + AudioManager.Instance.nextClip.length)
@@ -94,6 +96,7 @@ public class BeatLine : MonoBehaviour
             instantiateKey(ref index, beatTime, AudioManager.Instance.nextBeatList);
         }
         else if (AudioManager.Instance.nextClip != null
+            && AudioManager.Instance.nextNextBeatList != null
             && beatTime > AudioManager.Instance.audioSource.clip.length + AudioManager.Instance.nextClip.length
             && beatTime <= AudioManager.Instance.audioSource.clip.length + maxTime)
         {
@@ -102,7 +105,8 @@ public class BeatLine : MonoBehaviour
             if (beatTime <= AudioManager.Instance.nextNextBeatList[0].time) index = 0;
             instantiateKey(ref index, beatTime, AudioManager.Instance.nextNextBeatList);
         }
-        else if (beatTime <= AudioManager.Instance.audioSource.clip.length)
+        else if (AudioManager.Instance.beatList != null
+            && beatTime <= AudioManager.Instance.audioSource.clip.length)
         {
             //Debug.Log(3 + ":" + beatTime);
             instantiateKey(ref index, beatTime, AudioManager.Instance.beatList);
@@ -129,7 +133,7 @@ public class BeatLine : MonoBehaviour
                     key = Instantiate(keyJ, pos, Quaternion.identity) as GameObject;
                     break;
                 case 1:
-                    key = Instantiate(keyK,pos, Quaternion.identity) as GameObject;
+                    key = Instantiate(keyK, pos, Quaternion.identity) as GameObject;
                     break;
                 case 2:
                     key = Instantiate(keyL, pos, Quaternion.identity) as GameObject;
@@ -143,7 +147,7 @@ public class BeatLine : MonoBehaviour
             index++;
         }
     }
-    public void getPointPos(float distance,out Vector3 pos)
+    public void getPointPos(float distance, out Vector3 pos)
     {
         Ray ray = new Ray(transform.position, hitList[0].point);
         for (int i = 0; i < hitList.Count - 1; i++)
@@ -153,7 +157,7 @@ public class BeatLine : MonoBehaviour
             if (distance - hitDistance < 0)//less than the distance among the hitpoint
             {
                 ray.direction = hitPoint - ray.origin;
-                pos= ray.GetPoint(distance);
+                pos = ray.GetPoint(distance);
                 return;
             }
             distance -= hitDistance;
@@ -161,13 +165,11 @@ public class BeatLine : MonoBehaviour
         }
         //above the last hitpoint or no hitpoint exist
         ray.direction = hitList[hitList.Count - 1].point - ray.origin;
-        pos= ray.GetPoint(distance);
+        pos = ray.GetPoint(distance);
     }
     void DrawLines()
     {
-
         List<Vector3> pointList = new List<Vector3>();
-        float distance = maxLength;
         pointList.Add(transform.position);
         foreach (var hit in hitList)
         {

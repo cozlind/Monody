@@ -5,13 +5,17 @@ public class BeatUnit : MonoBehaviour {
 
     public GameObject hitArea;
     public GameObject player;
+    public GameObject arrowPoint;
+    public Object arrowSprite;
     public float threshold = 0.22f;
     public float distance;
     bool isPerfect = false;
 	void Start ()
     {
-        hitArea = GameObject.Find("HitArea");
-        player = GameObject.Find("Player");
+        hitArea = PlayerController.Instance.hitArea;
+        player = PlayerController.Instance.player;
+        arrowPoint = PlayerController.Instance.arrowPoint;
+        arrowSprite = PlayerController.Instance.arrowSprite;
         StartCoroutine("destroySelf");
     } 
     IEnumerator destroySelf()
@@ -39,24 +43,17 @@ public class BeatUnit : MonoBehaviour {
             time += Time.deltaTime;
             if (Input.GetKeyDown(key))
             {
-                //click perfect
-                isPerfect = true;
-                gameObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.4f);
-                gameObject.transform.localScale /= 2f;
-                hitArea.transform.localScale *= 1.5f;
-
-                //
-                PlayerController.Instance.enableGravity = true;
-                PlayerController.Instance.dash(BeatLine.Instance.hitList[0].point);
-
-                 yield return new WaitForSeconds(0.1f);
-                hitArea.transform.localScale /= 1.5f;
-                break;
+                yield return PlayerController.Instance.clickPerfect(gameObject,key);
+                Destroy(gameObject);
+                yield break;
+            }
+            else if (Input.anyKeyDown)
+            {
+                PlayerController.Instance.clickFail();
             }
             yield return null;
         }
-        if (!isPerfect)
-            PlayerController.Instance.enableGravity = false;
+        PlayerController.Instance.clickFail();
         Destroy(gameObject);
     }
 	void Update ()
