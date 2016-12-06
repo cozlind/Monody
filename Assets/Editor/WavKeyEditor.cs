@@ -29,11 +29,13 @@ public class WavKeyEditor : EditorWindow
     static Rect key3Rect = new Rect(leftWidth, key2Rect.yMax, waveFormWidth, itemBarHeight);
     static Rect key4Rect = new Rect(leftWidth, key3Rect.yMax, waveFormWidth, itemBarHeight);
     // Add menu named "My Window" to the Window menu
+    void OnEnable()
+    {
+        EditorWindow.GetWindowWithRect<WavKeyEditor>(windowRect, false, "WavKey Editor");
+    }
     [MenuItem("Window/WavKey Editor")]
     static void Init()
     {
-        EditorWindow.GetWindowWithRect<WavKeyEditor>(windowRect, false, "WavKey Editor");
-
         UnityEngine.Object[] objects = Selection.GetFiltered(typeof(AudioClip), SelectionMode.Assets);
         if (objects.Length == 0) { disableToolbar = true; return; }
         disableToolbar = false;
